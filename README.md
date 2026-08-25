@@ -7,4 +7,4 @@ Su propósito es exclusivamente el de pruebas de compatibilidad y rendimiento de
 ---
 © 2026 NOVAPLAY TV
 
-© 2010 -� 2010 - 2026 - MSGT. TODOS LOS DERECHOS RESERVADOS. 
+© 2010 - 2026 - MSGT. TODOS LOS DERECHOS RESERVADOS. 
