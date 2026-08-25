@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -224,7 +224,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
     <button
         id="fullscreen-btn"
         title="Pantalla completa">
-        ⛶
+        â›¶
     </button>
 
 
@@ -238,15 +238,15 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             alt="NovaPlay">
 
-        <h1>ESTE EVENTO FINALIZÓ</h1>
+        <h1>ESTE EVENTO FINALIZí“</h1>
 
         <p>
             El canal se reactivará automáticamente al iniciar
-            el próximo evento disponible.
+            el prí³ximo evento disponible.
         </p>
 
         <div id="event-status">
-            Esperando próxima transmisión...
+            Esperando prí³xima transmisií³n...
         </div>
 
     </div>
@@ -300,7 +300,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
     /*
-     * Comprobación del JSON.
+     * Comprobacií³n del JSON.
      */
     let checkTimer = null;
 
@@ -343,7 +343,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
         eventEnded.style.display = 'flex';
 
         eventStatus.textContent =
-            'Esperando próximo evento...';
+            'Esperando prí³ximo evento...';
 
     }
 
@@ -427,7 +427,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
         'fullscreenchange',
         function() {
 
-            fullscreenBtn.textContent = '⛶';
+            fullscreenBtn.textContent = 'â›¶';
 
         }
     );
@@ -560,7 +560,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             /*
              * ====================================
              * CASO 1:
-             * ES UN M3U8 VÁLIDO
+             * ES UN M3U8 VíLIDO
              * ====================================
              */
 
@@ -614,7 +614,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             ) {
 
                 log(
-                    'La URL respondió HTML / NOT FOUND.'
+                    'La URL respondií³ HTML / NOT FOUND.'
                 );
 
                 return false;
@@ -644,7 +644,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
              * como finalizada.
              *
              * Esto evita confundir un problema
-             * temporal de conexión con un evento
+             * temporal de conexií³n con un evento
              * terminado.
              */
 
@@ -661,7 +661,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
     /* =========================
-       INICIAR TRANSMISIÓN
+       INICIAR TRANSMISIí“N
        ========================= */
 
     async function startStream(targetUrl) {
@@ -716,7 +716,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
         log(
-            'Nueva transmisión detectada.'
+            'Nueva transmisií³n detectada.'
         );
 
 
@@ -731,8 +731,8 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
         /*
-         * Error de conexión durante
-         * la comprobación.
+         * Error de conexií³n durante
+         * la comprobacií³n.
          *
          * No marcamos como finalizado.
          */
@@ -750,14 +750,14 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
         /*
          * ====================================
-         * M3U8 NO VÁLIDO
+         * M3U8 NO VíLIDO
          * ====================================
          */
 
         if (!valid) {
 
             log(
-                'La transmisión no está disponible.'
+                'La transmisií³n no está disponible.'
             );
 
 
@@ -789,7 +789,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
         /*
          * ====================================
-         * M3U8 VÁLIDO
+         * M3U8 VíLIDO
          * ====================================
          */
 
@@ -850,7 +850,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
                 function() {
 
                     log(
-                        'Transmisión detectada correctamente.'
+                        'Transmisií³n detectada correctamente.'
                     );
 
 
@@ -934,7 +934,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
                      * hls.startLoad()
                      *
                      * porque no queremos reintentar
-                     * la misma transmisión.
+                     * la misma transmisií³n.
                      */
 
 
@@ -942,9 +942,9 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
                     /*
-                     * Si ya teníamos un M3U8 válido,
+                     * Si ya tení­amos un M3U8 válido,
                      * no necesariamente significa
-                     * que terminó el evento.
+                     * que terminí³ el evento.
                      *
                      * Esperamos a que cambie la URL
                      * en novaplay.json.
@@ -977,7 +977,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
                 function onMetadata() {
 
                     log(
-                        'Transmisión detectada correctamente.'
+                        'Transmisií³n detectada correctamente.'
                     );
 
 
@@ -1020,7 +1020,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
                 function() {
 
                     log(
-                        'Error en reproducción HLS nativa.'
+                        'Error en reproduccií³n HLS nativa.'
                     );
 
                     destroyPlayer();
@@ -1043,7 +1043,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
     /* =========================
-       COMPROBAR PRÓXIMO EVENTO
+       COMPROBAR PRí“XIMO EVENTO
        ========================= */
 
     async function checkForNextEvent() {
@@ -1077,7 +1077,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
              * NO HACER NADA.
              *
              * Esto es lo importante:
-             * si la URL anterior respondió
+             * si la URL anterior respondií³
              * "Not Found", no volvemos a cargarla.
              */
 
@@ -1106,10 +1106,10 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
                 /*
-                 * La URL cambió.
+                 * La URL cambií³.
                  *
                  * Permitimos nuevamente
-                 * la reproducción.
+                 * la reproduccií³n.
                  */
 
                 endedUrl = "";
@@ -1129,7 +1129,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
         } catch (error) {
 
             log(
-                'Error verificando próximo evento: ' +
+                'Error verificando prí³ximo evento: ' +
                 error.message
             );
 
@@ -1139,7 +1139,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
     /* =========================
-       INICIALIZACIÓN
+       INICIALIZACIí“N
        ========================= */
 
     async function init() {
@@ -1166,7 +1166,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
             log(
-                'Usuario DEMO - Sesión Autorizada'
+                'Usuario DEMO - Sesií³n Autorizada'
             );
 
 
@@ -1188,7 +1188,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             } else {
 
                 log(
-                    'URL encontrada. Verificando transmisión...'
+                    'URL encontrada. Verificando transmisií³n...'
                 );
 
 
@@ -1201,7 +1201,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
             /*
              * ====================================
-             * MONITOR DE PRÓXIMO EVENTO
+             * MONITOR DE PRí“XIMO EVENTO
              * ====================================
              *
              * Solo consulta novaplay.json.
@@ -1229,7 +1229,7 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
 
 
             /*
-             * Seguimos consultando únicamente
+             * Seguimos consultando íºnicamente
              * novaplay.json para detectar
              * un nuevo evento.
              */
