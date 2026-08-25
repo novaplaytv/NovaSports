@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -41,24 +41,16 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
         outline: none;
     }
 
-    /* =========================
-       PANTALLA EVENTO FINALIZADO
-       ========================= */
-
     #event-ended {
         position: absolute;
         inset: 0;
         z-index: 5000;
-
         display: none;
-
         align-items: center;
         justify-content: center;
         flex-direction: column;
-
         background: #000;
         text-align: center;
-
         padding: 20px;
         box-sizing: border-box;
     }
@@ -66,126 +58,74 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
     #event-ended img {
         width: 190px;
         max-width: 45vw;
-
         margin-bottom: 35px;
-
         user-select: none;
         -webkit-user-drag: none;
     }
 
     #event-ended h1 {
         margin: 0 0 15px 0;
-
         color: #fff;
-
         font-size: clamp(25px, 4vw, 48px);
-
         font-weight: 800;
-
         letter-spacing: 1px;
     }
 
     #event-ended p {
         margin: 0;
-
         color: #aaa;
-
         font-size: clamp(14px, 2vw, 21px);
-
         line-height: 1.5;
-
         max-width: 750px;
     }
 
     #event-status {
         margin-top: 25px;
-
         color: #666;
-
         font-size: 12px;
     }
 
-    /* =========================
-       DEBUG
-       ========================= */
-
     #debug-log {
         position: absolute;
-
         top: 0;
         left: 0;
-
         background: rgba(0,0,0,0.8);
-
         color: #0f0;
-
         font-family: monospace;
-
         font-size: 10px;
-
         z-index: 9999;
-
         max-height: 40%;
-
         overflow-y: auto;
-
         width: 300px;
-
         pointer-events: none;
-
         padding: 10px;
     }
 
-    /* =========================
-       MARCA NOVAPLAY
-       ========================= */
-
     .watermark {
         position: absolute;
-
         top: 20px;
         right: 20px;
-
         width: 120px;
-
         opacity: 0.6;
-
         pointer-events: none;
-
         z-index: 1000;
-
         user-select: none;
     }
 
-    /* =========================
-       FULLSCREEN
-       ========================= */
-
     #fullscreen-btn {
         position: absolute;
-
         bottom: 20px;
         right: 20px;
-
         z-index: 2000;
-
         width: 50px;
         height: 45px;
-
         border: none;
-
         border-radius: 6px;
-
         background: rgba(0, 0, 0, 0.65);
-
         color: white;
-
         font-size: 27px;
-
         cursor: pointer;
-
         opacity: 0;
-
         transition: opacity 0.2s ease;
     }
 
@@ -224,1032 +164,249 @@ href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
     <button
         id="fullscreen-btn"
         title="Pantalla completa">
-        â›¶
+        ⛶
     </button>
 
-
-    <!-- =========================
-         EVENTO FINALIZADO
-         ========================= -->
-
     <div id="event-ended">
-
         <img
             src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
             alt="NovaPlay">
-
-        <h1>ESTE EVENTO FINALIZí“</h1>
-
+        <h1>ESTE EVENTO FINALIZÓ</h1>
         <p>
             El canal se reactivará automáticamente al iniciar
-            el prí³ximo evento disponible.
+            el próximo evento disponible.
         </p>
-
         <div id="event-status">
-            Esperando prí³xima transmisií³n...
+            Esperando próxima transmisión...
         </div>
-
     </div>
 
 </div>
 
-
 <script>
 
 (function() {
+    const logger = document.getElementById('debug-log');
+    const video = document.getElementById('video');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const videoContainer = document.getElementById('video-container');
+    const eventEnded = document.getElementById('event-ended');
+    const eventStatus = document.getElementById('event-status');
 
-    const logger =
-        document.getElementById('debug-log');
-
-    const video =
-        document.getElementById('video');
-
-    const fullscreenBtn =
-        document.getElementById('fullscreen-btn');
-
-    const videoContainer =
-        document.getElementById('video-container');
-
-    const eventEnded =
-        document.getElementById('event-ended');
-
-    const eventStatus =
-        document.getElementById('event-status');
-
-
-    /*
-     * Instancia HLS actual.
-     */
     let hls = null;
-
-
-    /*
-     * URL que actualmente estamos utilizando.
-     */
     let currentUrl = "";
-
-
-    /*
-     * URL que ya fue detectada como
-     * finalizada / Not Found.
-     *
-     * Esta URL NO volverá a reproducirse
-     * mientras siga siendo la misma.
-     */
     let endedUrl = "";
-
-
-    /*
-     * Comprobacií³n del JSON.
-     */
     let checkTimer = null;
-
-
-    /*
-     * Cada cuánto se consulta novaplay.json.
-     */
     const CHECK_NEXT_EVENT = 30000;
 
-
-    /* =========================
-       LOG
-       ========================= */
-
     function log(msg) {
-
-        const div =
-            document.createElement('div');
-
+        const div = document.createElement('div');
         div.textContent = `> ${msg}`;
-
         logger.appendChild(div);
-
-        logger.scrollTop =
-            logger.scrollHeight;
-
+        logger.scrollTop = logger.scrollHeight;
     }
-
-
-    /* =========================
-       MOSTRAR EVENTO FINALIZADO
-       ========================= */
 
     function showEventEnded() {
-
-        log(
-            'EVENTO FINALIZADO - No hay M3U8 disponible.'
-        );
-
+        log('EVENTO FINALIZADO - No hay M3U8 disponible.');
         eventEnded.style.display = 'flex';
-
-        eventStatus.textContent =
-            'Esperando prí³ximo evento...';
-
+        eventStatus.textContent = 'Esperando próximo evento...';
     }
-
-
-    /* =========================
-       OCULTAR EVENTO FINALIZADO
-       ========================= */
 
     function hideEventEnded() {
-
         eventEnded.style.display = 'none';
-
     }
-
-
-    /* =========================
-       DESTRUIR HLS
-       ========================= */
 
     function destroyPlayer() {
-
         if (hls) {
-
-            try {
-
-                hls.destroy();
-
-            } catch (e) {}
-
+            try { hls.destroy(); } catch (e) {}
             hls = null;
-
         }
-
         try {
-
             video.pause();
-
             video.removeAttribute('src');
-
             video.load();
-
         } catch (e) {}
-
     }
 
-
-    /* =========================
-       FULLSCREEN
-       ========================= */
-
-    fullscreenBtn.addEventListener(
-        'click',
-        async function() {
-
-            try {
-
-                if (!document.fullscreenElement) {
-
-                    await videoContainer.requestFullscreen();
-
-                } else {
-
-                    await document.exitFullscreen();
-
-                }
-
-            } catch (error) {
-
-                log(
-                    'Error pantalla completa: ' +
-                    error.message
-                );
-
+    fullscreenBtn.addEventListener('click', async function() {
+        try {
+            if (!document.fullscreenElement) {
+                await videoContainer.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
             }
-
+        } catch (error) {
+            log('Error pantalla completa: ' + error.message);
         }
-    );
+    });
 
-
-    document.addEventListener(
-        'fullscreenchange',
-        function() {
-
-            fullscreenBtn.textContent = 'â›¶';
-
-        }
-    );
-
-
-    /* =========================
-       OBTENER NOVAPLAY.JSON
-       ========================= */
+    document.addEventListener('fullscreenchange', function() {
+        fullscreenBtn.textContent = '⛶';
+    });
 
     async function getChannelUrl() {
-
-        const encodedUrl =
-            "aHR0cHM6Ly9tcmdobm5ndXBvbHNnYXRjbWV2dy5zdXBhYmFzZS5jby9zdG9yYWdlL3YxL29iamVjdC9wdWJsaWMvTm92YXBsYXkvbm92YXBsYXkuanNvbg==";
-
-        const jsonUrl =
-            atob(encodedUrl);
-
-
-        const response = await fetch(
-            jsonUrl + "?t=" + Date.now(),
-            {
-                cache: "no-store"
-            }
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                'HTTP ' + response.status
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
+        const encodedUrl = "aHR0cHM6Ly9tcmdobm5ndXBvbHNnYXRjbWV2dy5zdXBhYmFzZS5jby9zdG9yYWdlL3YxL29iamVjdC9wdWJsaWMvTm92YXBsYXkvbm92YXBsYXkuanNvbg==";
+        const jsonUrl = atob(encodedUrl);
+        const response = await fetch(jsonUrl + "?t=" + Date.now(), { cache: "no-store" });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
         let targetUrl = "";
-
-
         for (const category of data) {
-
-            if (!category.items) {
-                continue;
-            }
-
-
-            const channel =
-                category.items.find(
-                    ch => ch.name === "NOVASPORTS"
-                );
-
-
+            if (!category.items) continue;
+            const channel = category.items.find(ch => ch.name === "NOVASPORTS");
             if (channel) {
-
-                targetUrl =
-                    channel.url || "";
-
+                targetUrl = channel.url || "";
                 break;
-
             }
-
         }
-
-
         return targetUrl;
-
     }
-
-
-    /* =========================
-       VALIDAR M3U8
-       ========================= */
 
     async function validateM3U8(url) {
-
-        log(
-            'Verificando respuesta del M3U8...'
-        );
-
-
+        log('Verificando respuesta del M3U8...');
         try {
+            const separator = url.includes('?') ? '&' : '?';
+            const checkUrl = url + separator + 'check=' + Date.now();
+            const response = await fetch(checkUrl, { method: 'GET', cache: 'no-store' });
+            const text = await response.text();
+            const content = text.trim();
+            const lower = content.toLowerCase();
+            log('Respuesta recibida: ' + content.substring(0, 100));
 
-            const separator =
-                url.includes('?')
-                    ? '&'
-                    : '?';
-
-
-            const checkUrl =
-                url +
-                separator +
-                'check=' +
-                Date.now();
-
-
-            const response =
-                await fetch(
-                    checkUrl,
-                    {
-                        method: 'GET',
-                        cache: 'no-store'
-                    }
-                );
-
-
-            /*
-             * Leemos la respuesta completa.
-             */
-            const text =
-                await response.text();
-
-
-            const content =
-                text.trim();
-
-
-            const lower =
-                content.toLowerCase();
-
-
-            log(
-                'Respuesta recibida: ' +
-                content.substring(0, 100)
-            );
-
-
-            /*
-             * ====================================
-             * CASO 1:
-             * ES UN M3U8 VíLIDO
-             * ====================================
-             */
-
-            if (
-                lower.includes('#extm3u')
-            ) {
-
-                log(
-                    'M3U8 válido detectado.'
-                );
-
+            if (lower.includes('#extm3u')) {
+                log('M3U8 válido detectado.');
                 return true;
-
             }
 
+            const isHTML = lower.includes('<html') || lower.includes('<!doctype') || lower.includes('<body') || lower.includes('<head');
+            const isNotFound = lower.includes('not found') || lower.includes('404 not found') || lower.includes('page not found') || lower.includes('file not found') || lower.includes('stream not found') || lower.includes('video not found') || lower.includes('resource not found');
 
-            /*
-             * ====================================
-             * CASO 2:
-             * RESPONDE HTML
-             * ====================================
-             */
-
-            const isHTML =
-                lower.includes('<html') ||
-                lower.includes('<!doctype') ||
-                lower.includes('<body') ||
-                lower.includes('<head');
-
-
-            /*
-             * ====================================
-             * CASO 3:
-             * CONTIENE NOT FOUND
-             * ====================================
-             */
-
-            const isNotFound =
-                lower.includes('not found') ||
-                lower.includes('404 not found') ||
-                lower.includes('page not found') ||
-                lower.includes('file not found') ||
-                lower.includes('stream not found') ||
-                lower.includes('video not found') ||
-                lower.includes('resource not found');
-
-
-            if (
-                isHTML ||
-                isNotFound
-            ) {
-
-                log(
-                    'La URL respondií³ HTML / NOT FOUND.'
-                );
-
+            if (isHTML || isNotFound) {
+                log('La URL respondió HTML / NOT FOUND.');
                 return false;
-
             }
-
-
-            /*
-             * ====================================
-             * CUALQUIER RESPUESTA QUE NO CONTENGA
-             * #EXTM3U NO SE CONSIDERA M3U8
-             * ====================================
-             */
-
-            log(
-                'La respuesta no contiene #EXTM3U.'
-            );
-
+            log('La respuesta no contiene #EXTM3U.');
             return false;
-
-
         } catch (error) {
-
-            /*
-             * Si no podemos consultar la URL,
-             * NO marcamos automáticamente la URL
-             * como finalizada.
-             *
-             * Esto evita confundir un problema
-             * temporal de conexií³n con un evento
-             * terminado.
-             */
-
-            log(
-                'No se pudo verificar M3U8: ' +
-                error.message
-            );
-
+            log('No se pudo verificar M3U8: ' + error.message);
             return null;
-
         }
-
     }
-
-
-    /* =========================
-       INICIAR TRANSMISIí“N
-       ========================= */
 
     async function startStream(targetUrl) {
-
-        /*
-         * Evitar volver a intentar una URL
-         * que ya fue marcada como finalizada.
-         */
-
-        if (
-            endedUrl &&
-            targetUrl === endedUrl
-        ) {
-
-            log(
-                'Esta URL ya fue marcada como finalizada.'
-            );
-
+        if (endedUrl && targetUrl === endedUrl) {
+            log('Esta URL ya fue marcada como finalizada.');
             return;
-
         }
-
-
-        /*
-         * Si ya estamos reproduciendo
-         * exactamente la misma URL,
-         * no hacemos nada.
-         */
-
-        if (
-            currentUrl === targetUrl &&
-            hls
-        ) {
-
-            return;
-
-        }
-
+        if (currentUrl === targetUrl && hls) return;
 
         destroyPlayer();
-
-
-        currentUrl =
-            targetUrl;
-
-
+        currentUrl = targetUrl;
         hideEventEnded();
+        logger.style.display = 'block';
+        log('Nueva transmisión detectada.');
 
-
-        logger.style.display =
-            'block';
-
-
-        log(
-            'Nueva transmisií³n detectada.'
-        );
-
-
-        /*
-         * ====================================
-         * VALIDAR RESPUESTA DEL M3U8
-         * ====================================
-         */
-
-        const valid =
-            await validateM3U8(targetUrl);
-
-
-        /*
-         * Error de conexií³n durante
-         * la comprobacií³n.
-         *
-         * No marcamos como finalizado.
-         */
-
+        const valid = await validateM3U8(targetUrl);
         if (valid === null) {
-
-            log(
-                'No se pudo verificar el M3U8.'
-            );
-
+            log('No se pudo verificar el M3U8.');
             return;
-
         }
-
-
-        /*
-         * ====================================
-         * M3U8 NO VíLIDO
-         * ====================================
-         */
 
         if (!valid) {
-
-            log(
-                'La transmisií³n no está disponible.'
-            );
-
-
-            /*
-             * Guardamos esta URL.
-             *
-             * Mientras novaplay.json siga entregando
-             * esta misma URL NO se volverá a intentar.
-             */
-
-            endedUrl =
-                targetUrl;
-
-
-            currentUrl =
-                targetUrl;
-
-
+            log('La transmisión no está disponible.');
+            endedUrl = targetUrl;
+            currentUrl = targetUrl;
             destroyPlayer();
-
-
             showEventEnded();
-
-
             return;
-
         }
 
-
-        /*
-         * ====================================
-         * M3U8 VíLIDO
-         * ====================================
-         */
-
-        log(
-            'M3U8 válido. Iniciando reproductor...'
-        );
-
-
+        log('M3U8 válido. Iniciando reproductor...');
         if (Hls.isSupported()) {
-
-
-            hls =
-                new Hls({
-
-                    maxBufferLength: 60,
-
-                    maxMaxBufferLength: 120,
-
-                    maxBufferSize:
-                        60 * 1024 * 1024,
-
-                    lowLatencyMode: true,
-
-                    backStep: 0.5,
-
-                    startLevel: -1,
-
-                    /*
-                     * No hacer varios reintentos
-                     * automáticos del manifest.
-                     */
-
-                    manifestLoadingMaxRetry: 0,
-
-                    levelLoadingMaxRetry: 0
-
-                });
-
-
-            hls.loadSource(
-                targetUrl
-            );
-
-
-            hls.attachMedia(
-                video
-            );
-
-
-            /*
-             * ====================================
-             * MANIFEST CARGADO
-             * ====================================
-             */
-
-            hls.on(
-                Hls.Events.MANIFEST_PARSED,
-                function() {
-
-                    log(
-                        'Transmisií³n detectada correctamente.'
-                    );
-
-
-                    video.play()
-                        .then(function() {
-
-                            setTimeout(
-                                function() {
-
-                                    logger.style.display =
-                                        'none';
-
-                                },
-                                1000
-                            );
-
-                        })
-                        .catch(
-                            function(e) {
-
-                                log(
-                                    'Error Autoplay: ' +
-                                    e.message
-                                );
-
-                            }
-                        );
-
-                }
-            );
-
-
-            /*
-             * ====================================
-             * FRAGMENTO RECIBIDO
-             * ====================================
-             */
-
-            hls.on(
-                Hls.Events.FRAG_LOADED,
-                function() {
-
-                    hideEventEnded();
-
-                }
-            );
-
-
-            /*
-             * ====================================
-             * ERRORES HLS
-             * ====================================
-             */
-
-            hls.on(
-                Hls.Events.ERROR,
-                function(event, data) {
-
-                    if (!data.fatal) {
-
-                        return;
-
-                    }
-
-
-                    log(
-                        'Error HLS: ' +
-                        (
-                            data.details ||
-                            data.type ||
-                            'desconocido'
-                        )
-                    );
-
-
-                    /*
-                     * IMPORTANTE:
-                     *
-                     * NO hacemos:
-                     *
-                     * hls.startLoad()
-                     *
-                     * porque no queremos reintentar
-                     * la misma transmisií³n.
-                     */
-
-
-                    destroyPlayer();
-
-
-                    /*
-                     * Si ya tení­amos un M3U8 válido,
-                     * no necesariamente significa
-                     * que terminí³ el evento.
-                     *
-                     * Esperamos a que cambie la URL
-                     * en novaplay.json.
-                     */
-
-                }
-            );
-
-
+            hls = new Hls({
+                maxBufferLength: 60,
+                maxMaxBufferLength: 120,
+                maxBufferSize: 60 * 1024 * 1024,
+                lowLatencyMode: true,
+                backStep: 0.5,
+                startLevel: -1,
+                manifestLoadingMaxRetry: 0,
+                levelLoadingMaxRetry: 0
+            });
+            hls.loadSource(targetUrl);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                log('Transmisión detectada correctamente.');
+                video.play().then(function() {
+                    setTimeout(function() { logger.style.display = 'none'; }, 1000);
+                }).catch(function(e) { log('Error Autoplay: ' + e.message); });
+            });
+            hls.on(Hls.Events.FRAG_LOADED, function() { hideEventEnded(); });
+            hls.on(Hls.Events.ERROR, function(event, data) {
+                if (!data.fatal) return;
+                log('Error HLS: ' + (data.details || data.type || 'desconocido'));
+                destroyPlayer();
+            });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = targetUrl;
+            video.addEventListener('loadedmetadata', function onMetadata() {
+                log('Transmisión detectada correctamente.');
+                video.play().then(function() {
+                    setTimeout(function() { logger.style.display = 'none'; }, 1000);
+                }).catch(function(e) { log('Error Autoplay: ' + e.message); });
+            }, { once: true });
+            video.addEventListener('error', function() {
+                log('Error en reproducción HLS nativa.');
+                destroyPlayer();
+            });
+        } else {
+            log('Este navegador no soporta HLS.');
         }
-
-
-        /* =========================
-           HLS NATIVO
-           ========================= */
-
-        else if (
-            video.canPlayType(
-                'application/vnd.apple.mpegurl'
-            )
-        ) {
-
-
-            video.src =
-                targetUrl;
-
-
-            video.addEventListener(
-                'loadedmetadata',
-                function onMetadata() {
-
-                    log(
-                        'Transmisií³n detectada correctamente.'
-                    );
-
-
-                    video.play()
-                        .then(
-                            function() {
-
-                                setTimeout(
-                                    function() {
-
-                                        logger.style.display =
-                                            'none';
-
-                                    },
-                                    1000
-                                );
-
-                            }
-                        )
-                        .catch(
-                            function(e) {
-
-                                log(
-                                    'Error Autoplay: ' +
-                                    e.message
-                                );
-
-                            }
-                        );
-
-                },
-                {
-                    once: true
-                }
-            );
-
-
-            video.addEventListener(
-                'error',
-                function() {
-
-                    log(
-                        'Error en reproduccií³n HLS nativa.'
-                    );
-
-                    destroyPlayer();
-
-                }
-            );
-
-        }
-
-
-        else {
-
-            log(
-                'Este navegador no soporta HLS.'
-            );
-
-        }
-
     }
-
-
-    /* =========================
-       COMPROBAR PRí“XIMO EVENTO
-       ========================= */
 
     async function checkForNextEvent() {
-
         try {
-
-            const newUrl =
-                await getChannelUrl();
-
-
-            /*
-             * No hay URL.
-             */
-
+            const newUrl = await getChannelUrl();
             if (!newUrl) {
-
-                log(
-                    'NOVASPORTS sin URL disponible.'
-                );
-
+                log('NOVASPORTS sin URL disponible.');
                 return;
-
             }
-
-
-            /*
-             * ====================================
-             * MISMA URL
-             * ====================================
-             *
-             * NO HACER NADA.
-             *
-             * Esto es lo importante:
-             * si la URL anterior respondií³
-             * "Not Found", no volvemos a cargarla.
-             */
-
-            if (
-                newUrl === currentUrl
-            ) {
-
-                return;
-
-            }
-
-
-            /*
-             * ====================================
-             * URL NUEVA
-             * ====================================
-             */
-
-            if (
-                newUrl !== currentUrl
-            ) {
-
-                log(
-                    'Nueva URL de evento detectada.'
-                );
-
-
-                /*
-                 * La URL cambií³.
-                 *
-                 * Permitimos nuevamente
-                 * la reproduccií³n.
-                 */
-
+            if (newUrl === currentUrl) return;
+            if (newUrl !== currentUrl) {
+                log('Nueva URL de evento detectada.');
                 endedUrl = "";
-
-
-                logger.style.display =
-                    'block';
-
-
-                await startStream(
-                    newUrl
-                );
-
+                logger.style.display = 'block';
+                await startStream(newUrl);
             }
-
-
         } catch (error) {
-
-            log(
-                'Error verificando prí³ximo evento: ' +
-                error.message
-            );
-
+            log('Error verificando próximo evento: ' + error.message);
         }
-
     }
-
-
-    /* =========================
-       INICIALIZACIí“N
-       ========================= */
 
     async function init() {
-
-        log(
-            'Obteniendo Datos desde NOVAPLAY'
-        );
-
-
-        await new Promise(
-            r => setTimeout(r, 800)
-        );
-
-
+        log('Obteniendo Datos desde NOVAPLAY');
+        await new Promise(r => setTimeout(r, 800));
         try {
-
-            log(
-                'Conectando con Base de Datos...'
-            );
-
-
-            const targetUrl =
-                await getChannelUrl();
-
-
-            log(
-                'Usuario DEMO - Sesií³n Autorizada'
-            );
-
-
-            await new Promise(
-                r => setTimeout(r, 500)
-            );
-
-
+            log('Conectando con Base de Datos...');
+            const targetUrl = await getChannelUrl();
+            log('Usuario DEMO - Sesión Autorizada');
+            await new Promise(r => setTimeout(r, 500));
             if (!targetUrl) {
-
-                log(
-                    'NOVASPORTS no tiene URL disponible.'
-                );
-
-
+                log('NOVASPORTS no tiene URL disponible.');
                 showEventEnded();
-
-
             } else {
-
-                log(
-                    'URL encontrada. Verificando transmisií³n...'
-                );
-
-
-                await startStream(
-                    targetUrl
-                );
-
+                log('URL encontrada. Verificando transmisión...');
+                await startStream(targetUrl);
             }
-
-
-            /*
-             * ====================================
-             * MONITOR DE PRí“XIMO EVENTO
-             * ====================================
-             *
-             * Solo consulta novaplay.json.
-             *
-             * NO vuelve a consultar el M3U8
-             * de la misma URL.
-             */
-
-            checkTimer =
-                setInterval(
-                    checkForNextEvent,
-                    CHECK_NEXT_EVENT
-                );
-
-
+            checkTimer = setInterval(checkForNextEvent, CHECK_NEXT_EVENT);
         } catch (error) {
-
-            log(
-                'FALLO: ' +
-                error.message
-            );
-
-
+            log('FALLO: ' + error.message);
             showEventEnded();
-
-
-            /*
-             * Seguimos consultando íºnicamente
-             * novaplay.json para detectar
-             * un nuevo evento.
-             */
-
-            checkTimer =
-                setInterval(
-                    checkForNextEvent,
-                    CHECK_NEXT_EVENT
-                );
-
+            checkTimer = setInterval(checkForNextEvent, CHECK_NEXT_EVENT);
         }
-
     }
-
-
     init();
-
 })();
-
 </script>
-
 </body>
 </html>
