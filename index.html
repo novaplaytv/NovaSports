@@ -1,411 +1,154 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="no-referrer">
-<title>DEMO - NOVAPLAY</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>WEB PLAYER - NOVAPLAY</title>
+    <link rel="icon" type="image/webp" href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e50914;
+            --bg: #000000;
+            --overlay: rgba(0, 0, 0, 0.7);
+        }
 
-<link rel="icon" type="image/webp"
-href="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp">
+        * { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'Inter', sans-serif; }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.7/hls.min.js"></script>
+        #player-container { width: 100vw; height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-<style>
+        /* Pantalla Evento Finalizado */
+        #event-ended { position: absolute; inset: 0; z-index: 5000; display: none; align-items: center; justify-content: center; flex-direction: column; background: var(--bg); text-align: center; padding: 30px; }
+        #event-ended img { width: 120px; margin-bottom: 30px; filter: drop-shadow(0 0 20px rgba(229, 9, 20, 0.4)); }
+        #event-ended h1 { color: #fff; font-size: clamp(24px, 5vw, 42px); font-weight: 900; margin: 0 0 15px; letter-spacing: -1px; }
+        #event-ended p { color: #888; font-size: 18px; max-width: 600px; line-height: 1.5; margin: 0; }
+        #event-status { margin-top: 30px; color: var(--primary); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; }
 
-    html, body {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-    }
+        /* UI Overlays */
+        .watermark { position: absolute; top: 30px; right: 30px; width: 100px; opacity: 0.5; pointer-events: none; z-index: 1000; transition: 0.3s; }
 
-    #video-container {
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        background: #000;
-    }
+        #debug-log { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.8); border: 1px solid #333; border-radius: 10px; color: #0f0; font-family: monospace; font-size: 10px; z-index: 9999; max-height: 150px; overflow-y: auto; width: 250px; padding: 15px; display: none; }
 
-    video {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        background: #000;
-        outline: none;
-    }
+        #fullscreen-btn { position: absolute; bottom: 30px; right: 30px; z-index: 2000; width: 50px; height: 50px; border: none; border-radius: 50%; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; font-size: 24px; cursor: pointer; opacity: 0; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        #player-container:hover #fullscreen-btn, #player-container:hover .watermark { opacity: 1; }
+        #fullscreen-btn:hover { background: var(--primary); transform: scale(1.1); }
 
-    #event-ended {
-        position: absolute;
-        inset: 0;
-        z-index: 5000;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        background: #000;
-        text-align: center;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-
-    #event-ended img {
-        width: 190px;
-        max-width: 45vw;
-        margin-bottom: 35px;
-        user-select: none;
-        -webkit-user-drag: none;
-    }
-
-    #event-ended h1 {
-        margin: 0 0 15px 0;
-        color: #fff;
-        font-size: clamp(25px, 4vw, 48px);
-        font-weight: 800;
-        letter-spacing: 1px;
-    }
-
-    #event-ended p {
-        margin: 0;
-        color: #aaa;
-        font-size: clamp(14px, 2vw, 21px);
-        line-height: 1.5;
-        max-width: 750px;
-    }
-
-    #event-status {
-        margin-top: 25px;
-        color: #666;
-        font-size: 12px;
-    }
-
-    #debug-log {
-        position: absolute;
-        top: 0;
-        left: 0;
-        background: rgba(0,0,0,0.8);
-        color: #0f0;
-        font-family: monospace;
-        font-size: 10px;
-        z-index: 9999;
-        max-height: 40%;
-        overflow-y: auto;
-        width: 300px;
-        pointer-events: none;
-        padding: 10px;
-    }
-
-    .watermark {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        width: 120px;
-        opacity: 0.6;
-        pointer-events: none;
-        z-index: 1000;
-        user-select: none;
-    }
-
-    #fullscreen-btn {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        z-index: 2000;
-        width: 50px;
-        height: 45px;
-        border: none;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.65);
-        color: white;
-        font-size: 27px;
-        cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-
-    #video-container:hover #fullscreen-btn {
-        opacity: 1;
-    }
-
-    #fullscreen-btn:hover {
-        background: rgba(0, 0, 0, 0.85);
-    }
-
-</style>
+        /* Custom Loading */
+        #loader { position: absolute; width: 50px; height: 50px; border: 4px solid #333; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; z-index: 10; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </head>
-
 <body>
 
-<div id="debug-log"></div>
+<div id="player-container">
+    <div id="loader"></div>
+    <div id="debug-log"></div>
 
-<div id="video-container">
+    <video id="video" autoplay playsinline muted controls disablepictureinpicture controlslist="nodownload"></video>
 
-    <video
-        id="video"
-        autoplay
-        playsinline
-        muted
-        controls
-        controlslist="nodownload noplaybackrate"
-        disablepictureinpicture>
-    </video>
+    <img src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp" class="watermark" alt="NovaPlay">
 
-    <img
-        src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
-        class="watermark"
-        alt="NovaPlay">
+    <button id="fullscreen-btn" title="Pantalla completa">⛶</button>
 
-    <button
-        id="fullscreen-btn"
-        title="Pantalla completa">
-        ⛶
-    </button>
-
+    <!-- EVENTO FINALIZADO -->
     <div id="event-ended">
-        <img
-            src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp"
-            alt="NovaPlay">
-        <h1>ESTE EVENTO FINALIZÓ</h1>
-        <p>
-            El canal se reactivará automáticamente al iniciar
-            el próximo evento disponible.
-        </p>
-        <div id="event-status">
-            Esperando próxima transmisión...
-        </div>
+        <img src="https://raw.githubusercontent.com/novaplaytv/novaimg/main/novasplash.webp" alt="NovaPlay">
+        <h1>EVENTO FINALIZADO</h1>
+        <p>La transmisión se reactivará automáticamente cuando inicie el próximo evento programado.</p>
+        <div id="event-status">Sincronizando señal...</div>
     </div>
-
 </div>
 
 <script>
-
 (function() {
-    const logger = document.getElementById('debug-log');
     const video = document.getElementById('video');
-    const fullscreenBtn = document.getElementById('fullscreen-btn');
-    const videoContainer = document.getElementById('video-container');
+    const loader = document.getElementById('loader');
     const eventEnded = document.getElementById('event-ended');
     const eventStatus = document.getElementById('event-status');
+    const fsBtn = document.getElementById('fullscreen-btn');
+    const logger = document.getElementById('debug-log');
 
     let hls = null;
     let currentUrl = "";
     let endedUrl = "";
-    let checkTimer = null;
-    const CHECK_NEXT_EVENT = 30000;
+    const JSON_URL = "https://mrghnngupolsgatcmevw.supabase.co/storage/v1/object/public/Novaplay/novaplay.json";
 
-    function log(msg) {
-        const div = document.createElement('div');
-        div.textContent = `> ${msg}`;
-        logger.appendChild(div);
+    function log(m) {
+        const d = document.createElement('div');
+        d.textContent = `> ${m}`;
+        logger.appendChild(d);
         logger.scrollTop = logger.scrollHeight;
     }
 
-    function showEventEnded() {
-        log('EVENTO FINALIZADO - No hay M3U8 disponible.');
-        eventEnded.style.display = 'flex';
-        eventStatus.textContent = 'Esperando próximo evento...';
+    async function getSignal() {
+        try {
+            const r = await fetch(JSON_URL + "?t=" + Date.now(), { cache: "no-store" });
+            const data = await r.json();
+            for (const cat of data) {
+                const ch = cat.items?.find(i => i.name === "NOVASPORTS");
+                if (ch) return ch.url || "";
+            }
+        } catch (e) { log("Error datos: " + e.message); }
+        return "";
     }
 
-    function hideEventEnded() {
+    async function validateSignal(url) {
+        try {
+            const r = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+            return r.ok;
+        } catch (e) { return null; }
+    }
+
+    async function playSignal(url) {
+        if (endedUrl === url || (currentUrl === url && hls)) return;
+
+        loader.style.display = 'block';
+        currentUrl = url;
         eventEnded.style.display = 'none';
-    }
 
-    function destroyPlayer() {
-        if (hls) {
-            try { hls.destroy(); } catch (e) {}
-            hls = null;
-        }
-        try {
-            video.pause();
-            video.removeAttribute('src');
-            video.load();
-        } catch (e) {}
-    }
-
-    fullscreenBtn.addEventListener('click', async function() {
-        try {
-            if (!document.fullscreenElement) {
-                await videoContainer.requestFullscreen();
-            } else {
-                await document.exitFullscreen();
-            }
-        } catch (error) {
-            log('Error pantalla completa: ' + error.message);
-        }
-    });
-
-    document.addEventListener('fullscreenchange', function() {
-        fullscreenBtn.textContent = '⛶';
-    });
-
-    async function getChannelUrl() {
-        const encodedUrl = "aHR0cHM6Ly9tcmdobm5ndXBvbHNnYXRjbWV2dy5zdXBhYmFzZS5jby9zdG9yYWdlL3YxL29iamVjdC9wdWJsaWMvTm92YXBsYXkvbm92YXBsYXkuanNvbg==";
-        const jsonUrl = atob(encodedUrl);
-        const response = await fetch(jsonUrl + "?t=" + Date.now(), { cache: "no-store" });
-        if (!response.ok) throw new Error('HTTP ' + response.status);
-        const data = await response.json();
-        let targetUrl = "";
-        for (const category of data) {
-            if (!category.items) continue;
-            const channel = category.items.find(ch => ch.name === "NOVASPORTS");
-            if (channel) {
-                targetUrl = channel.url || "";
-                break;
-            }
-        }
-        return targetUrl;
-    }
-
-    async function validateM3U8(url) {
-        log('Verificando respuesta del M3U8...');
-        try {
-            const separator = url.includes('?') ? '&' : '?';
-            const checkUrl = url + separator + 'check=' + Date.now();
-            const response = await fetch(checkUrl, { method: 'GET', cache: 'no-store' });
-            const text = await response.text();
-            const content = text.trim();
-            const lower = content.toLowerCase();
-            log('Respuesta recibida: ' + content.substring(0, 100));
-
-            if (lower.includes('#extm3u')) {
-                log('M3U8 válido detectado.');
-                return true;
-            }
-
-            const isHTML = lower.includes('<html') || lower.includes('<!doctype') || lower.includes('<body') || lower.includes('<head');
-            const isNotFound = lower.includes('not found') || lower.includes('404 not found') || lower.includes('page not found') || lower.includes('file not found') || lower.includes('stream not found') || lower.includes('video not found') || lower.includes('resource not found');
-
-            if (isHTML || isNotFound) {
-                log('La URL respondió HTML / NOT FOUND.');
-                return false;
-            }
-            log('La respuesta no contiene #EXTM3U.');
-            return false;
-        } catch (error) {
-            log('No se pudo verificar M3U8: ' + error.message);
-            return null;
-        }
-    }
-
-    async function startStream(targetUrl) {
-        if (endedUrl && targetUrl === endedUrl) {
-            log('Esta URL ya fue marcada como finalizada.');
-            return;
-        }
-        if (currentUrl === targetUrl && hls) return;
-
-        destroyPlayer();
-        currentUrl = targetUrl;
-        hideEventEnded();
-        logger.style.display = 'block';
-        log('Nueva transmisión detectada.');
-
-        const valid = await validateM3U8(targetUrl);
-        if (valid === null) {
-            log('No se pudo verificar el M3U8.');
-            return;
-        }
-
-        if (!valid) {
-            log('La transmisión no está disponible.');
-            endedUrl = targetUrl;
-            currentUrl = targetUrl;
-            destroyPlayer();
-            showEventEnded();
-            return;
-        }
-
-        log('M3U8 válido. Iniciando reproductor...');
         if (Hls.isSupported()) {
-            hls = new Hls({
-                maxBufferLength: 60,
-                maxMaxBufferLength: 120,
-                maxBufferSize: 60 * 1024 * 1024,
-                lowLatencyMode: true,
-                backStep: 0.5,
-                startLevel: -1,
-                manifestLoadingMaxRetry: 0,
-                levelLoadingMaxRetry: 0
-            });
-            hls.loadSource(targetUrl);
+            if (hls) hls.destroy();
+            hls = new Hls({ lowLatencyMode: true, manifestLoadingMaxRetry: 0 });
+            hls.loadSource(url);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                log('Transmisión detectada correctamente.');
-                video.play().then(function() {
-                    setTimeout(function() { logger.style.display = 'none'; }, 1000);
-                }).catch(function(e) { log('Error Autoplay: ' + e.message); });
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                video.play().catch(() => {});
+                loader.style.display = 'none';
             });
-            hls.on(Hls.Events.FRAG_LOADED, function() { hideEventEnded(); });
-            hls.on(Hls.Events.ERROR, function(event, data) {
-                if (!data.fatal) return;
-                log('Error HLS: ' + (data.details || data.type || 'desconocido'));
-                destroyPlayer();
+            hls.on(Hls.Events.ERROR, (e, d) => {
+                if (d.fatal) {
+                    endedUrl = url;
+                    eventEnded.style.display = 'flex';
+                    loader.style.display = 'none';
+                }
             });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = targetUrl;
-            video.addEventListener('loadedmetadata', function onMetadata() {
-                log('Transmisión detectada correctamente.');
-                video.play().then(function() {
-                    setTimeout(function() { logger.style.display = 'none'; }, 1000);
-                }).catch(function(e) { log('Error Autoplay: ' + e.message); });
-            }, { once: true });
-            video.addEventListener('error', function() {
-                log('Error en reproducción HLS nativa.');
-                destroyPlayer();
-            });
+            video.src = url;
+            loader.style.display = 'none';
+        }
+    }
+
+    async function monitor() {
+        const url = await getSignal();
+        if (!url) {
+            eventEnded.style.display = 'flex';
+            loader.style.display = 'none';
         } else {
-            log('Este navegador no soporta HLS.');
+            await playSignal(url);
         }
     }
 
-    async function checkForNextEvent() {
-        try {
-            const newUrl = await getChannelUrl();
-            if (!newUrl) {
-                log('NOVASPORTS sin URL disponible.');
-                return;
-            }
-            if (newUrl === currentUrl) return;
-            if (newUrl !== currentUrl) {
-                log('Nueva URL de evento detectada.');
-                endedUrl = "";
-                logger.style.display = 'block';
-                await startStream(newUrl);
-            }
-        } catch (error) {
-            log('Error verificando próximo evento: ' + error.message);
-        }
-    }
+    fsBtn.onclick = () => {
+        if (!document.fullscreenElement) document.getElementById('player-container').requestFullscreen();
+        else document.exitFullscreen();
+    };
 
-    async function init() {
-        log('Obteniendo Datos desde NOVAPLAY');
-        await new Promise(r => setTimeout(r, 800));
-        try {
-            log('Conectando con Base de Datos...');
-            const targetUrl = await getChannelUrl();
-            log('Usuario DEMO - Sesión Autorizada');
-            await new Promise(r => setTimeout(r, 500));
-            if (!targetUrl) {
-                log('NOVASPORTS no tiene URL disponible.');
-                showEventEnded();
-            } else {
-                log('URL encontrada. Verificando transmisión...');
-                await startStream(targetUrl);
-            }
-            checkTimer = setInterval(checkForNextEvent, CHECK_NEXT_EVENT);
-        } catch (error) {
-            log('FALLO: ' + error.message);
-            showEventEnded();
-            checkTimer = setInterval(checkForNextEvent, CHECK_NEXT_EVENT);
-        }
-    }
-    init();
+    setInterval(monitor, 30000);
+    monitor();
 })();
 </script>
 </body>
