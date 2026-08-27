@@ -1,10 +1,13 @@
-﻿# DEMO
+﻿# 🧪 NovaPlay | Web Demo
 
-Este repositorio es una demostración técnica para el ecosistema **NovaPlay**. 
+Versión de demostración funcional del reproductor de **NovaPlay** diseñada para navegadores web modernos.
 
-Su propósito es exclusivamente el de pruebas de compatibilidad y rendimiento de servicios de streaming integrados.
+## ✨ Características
+
+*   **Reproductor Optimizado**: Basado en tecnologías web de alto rendimiento.
+*   **Experiencia de Usuario**: Réplica fiel de la interfaz de navegación de la APK.
+*   **Compatibilidad**: Soporte para streaming de baja latencia y protocolos adaptativos.
 
 ---
-© 2026 NOVAPLAY TV
-
-© 2010 - 2026 - MSGT. TODOS LOS DERECHOS RESERVADOS. 
+**Desarrollado por MSGT**  
+© 2026 NovaPlay TV.
